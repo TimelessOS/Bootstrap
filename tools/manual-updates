@@ -1,0 +1,30 @@
+#!/usr/bin/env bash
+echo -n "Run manual updates? [Y/n]: "
+read ANS
+[ "$ANS" == "n" ] && exit 0
+
+MANUAL_UPDATES=$(grep -E "(kind: tar|manual-updates|track:|track-extra:)" -lR  elements/)
+MONITORED_UPDATES=$(grep -E "release-monitoring: " -lR elements/)
+SKIP=$(grep -E "(skip-release-monitoring|track: main|track: trunk)" -lR elements/)
+PATCHES=$(grep -E "kind: patch" -lR elements/)
+
+# TODO: Make the check for main or trunk happen in MANUAL_UPDATES, not SKIP, to avoid situations
+# where files with more than once instance of `track:` get skipped
+
+# Unmonitored updates
+for file in $MANUAL_UPDATES; do
+    (echo $MONITORED_UPDATES $SKIP | grep "$file") || (micro $file; sleep 0.5)
+done
+
+# Monitored updates
+for file in $MONITORED_UPDATES; do
+	PKG_ID=`cat $file | grep "release-monitoring" | awk '{print $3}'`
+	curl https://release-monitoring.org/api/project/$PKG_ID | tr ',' '\n' | grep -E "(\"version\"|\"name\")" | micro
+	micro $file
+done
+
+# Patches
+for file in $PATCHES; do
+	micro $file
+	sleep 0.5
+done

@@ -1,0 +1,8 @@
+projects:
+  TimelessOS-Bootstrap:
+    bst-plugins.bst:
+    - ref: 693f296b51c9d32475b118faed3639141ddb6efac3848f1cd13a117f1915625a
+    bst-plugins-experimental.bst:
+    - ref: 56062ac0391c7cba8a8727c1db27e5e071198b64
+    freedesktop-sdk.bst:
+    - ref: 24.08-branchpoint-0-gcc325bac4f76430efd48517883ef67b55d6fd43d
