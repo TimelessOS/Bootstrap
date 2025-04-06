@@ -10,5 +10,4 @@ build-depends:
 config:
   commands:
   - |
-    mkdir -pv %{install-root}%{sysroot}
-    ln -sv %{prefix} %{install-root}%{sysroot}%{prefix}
+    mkdir -pv %{install-root}%{sysroot}%{prefix}
