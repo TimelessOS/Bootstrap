@@ -1,0 +1,45 @@
+#fastboot ext4sparse image default configuration
+
+# When specifying dependencies, one needs to specify
+# which dependencies are a part of the 'input' for
+# the image, other dependencies are assumed to be tooling
+# required to build the image and will be staged in "/"
+#
+# E.g.:
+#
+# build-depends:
+# - base.bst
+# - filename: input1.bst
+#   config:
+#     input: True
+# - filename: input2.bst
+#   config:
+#     input: True
+#
+
+
+variables:
+  img_output: test.img
+  root_password: root
+  locale: en_US.UTF-8
+  timezone: UTC
+  img_size: 55G
+  img_label: rootfs
+
+config:
+  create_dev_proc_shadow:
+  - |
+    mkdir -p %{build-root}/dev
+    mkdir -p %{build-root}/proc
+    systemd-firstboot --root %{build-root} --root-password %{root_password} --locale %{locale} --timezone %{timezone}
+    chmod 400 %{build-root}/etc/shadow
+
+  create_img:
+  - |
+    make_ext4fs -L %{img_label} -l %{img_size} -s /buildstream/%{img_output} %{build-root}
+
+  install_img:
+  - |
+    mv /buildstream/%{img_output} %{install-root}
+    chmod 0644 %{install-root}/%{img_output}
+

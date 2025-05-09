@@ -1,0 +1,14 @@
+# tar_element default configurations
+
+config:
+  
+  # Optionally specify a filename for the archive
+  filename: files
+
+  # Optionally specify a compression algorithm to use
+  # Currently supported options:
+  #   * none
+  #   * gzip (default)
+  #   * xz
+  #   * bzip2
+  compression: gzip

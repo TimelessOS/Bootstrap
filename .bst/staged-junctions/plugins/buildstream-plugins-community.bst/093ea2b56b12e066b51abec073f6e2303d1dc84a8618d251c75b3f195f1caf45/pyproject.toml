@@ -1,0 +1,78 @@
+[build-system]
+requires = ["setuptools>=45", "setuptools_scm[toml]>=6.2"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "buildstream-plugins-community"
+description = "A collection of community-maintained plugins."
+readme = "README.rst"
+requires-python = ">=3.7"
+keywords = []
+license = {text = "LGPL-2.1-or-later"}
+classifiers = [
+    "Programming Language :: Python :: 3",
+]
+dependencies = [
+    "packaging"
+]
+dynamic = ["version"]
+
+[project.urls]
+Homepage = "https://buildstream.gitlab.io/buildstream-plugins-community/"
+Documentation  = "https://buildstream.gitlab.io/buildstream-plugins-community/"
+Repository = "https://gitlab.com/BuildStream/buildstream-plugins-community"
+
+[tool.setuptools_scm]
+
+[tool.distutils.bdist_wheel]
+universal = true
+
+[tool.setuptools.packages.find]
+where = ["src"] 
+
+[project.optional-dependencies]
+bazel = ["requests"]
+deb = ["arpy"]
+
+[project.entry-points."buildstream.plugins.elements"]
+bazel_build = "buildstream_plugins_community.elements.bazel_build"
+bazelize = "buildstream_plugins_community.elements.bazelize"
+check_forbidden = "buildstream_plugins_community.elements.check_forbidden"
+dpkg_build = "buildstream_plugins_community.elements.dpkg_build"
+dpkg_deploy = "buildstream_plugins_community.elements.dpkg_deploy"
+flatpak_image = "buildstream_plugins_community.elements.flatpak_image"
+flatpak_repo = "buildstream_plugins_community.elements.flatpak_repo"
+x86image = "buildstream_plugins_community.elements.x86image"
+fastbootBootImage = "buildstream_plugins_community.elements.fastboot_bootimg"
+fastbootExt4Image = "buildstream_plugins_community.elements.fastboot_ext4"
+collect_integration = "buildstream_plugins_community.elements.collect_integration"
+collect_manifest = "buildstream_plugins_community.elements.collect_manifest"
+oci = "buildstream_plugins_community.elements.oci"
+tar_element = "buildstream_plugins_community.elements.tar_element"
+makemaker = "buildstream_plugins_community.elements.makemaker"
+modulebuild = "buildstream_plugins_community.elements.modulebuild"
+qmake = "buildstream_plugins_community.elements.qmake"
+snap_image = "buildstream_plugins_community.elements.snap_image"
+pyproject = "buildstream_plugins_community.elments.pyproject"
+
+[project.entry-points."buildstream.plugins.sources"]
+bazel_source = "buildstream_plugins_community.sources.bazel_source"
+cargo2 = "buildstream_plugins_community.sources.cargo2"
+gen_cargo_lock = "buildstream_plugins_community.sources.gen_cargo_lock"
+cpan = "buildstream_plugins_community.sources.cpan"
+deb = "buildstream_plugins_community.sources.deb"
+git_module = "buildstream_plugins_community.sources.git_module"
+git_tag = "buildstream_plugins_community.sources.git_tag"
+pypi = "buildstream_plugins_community.sources.pypi"
+quilt = "buildstream_plugins_community.sources.quilt"
+ostree = "buildstream_plugins_community.sources.ostree"
+zip = "buildstream_plugins_community.sources.zip"
+patch_queue = "buildstream_plugins_community.sources.patch_queue"
+
+[project.entry-points."buildstream.plugins.sourcemirrors"]
+fake_mirror = "buildstream_plugins_community.sourcemirrors.fake_mirror"
+gitlab_lfs_mirror = "buildstream_plugins_community.sourcemirrors.gitlab_lfs_mirror"
+simple_mirror = "buildstream_plugins_community.sourcemirrors.simple_mirror"
+
+[project.entry-points."buildstream.tests.source_plugins"]
+buildstream_plugins_community = "buildstream_plugins_community.testutils"

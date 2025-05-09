@@ -1,0 +1,6 @@
+config:
+  # OSTree branch to commit to
+  # ostree-branch: my-os/nightly/x86-64
+
+  # Commands to run on the sysroot before comitting
+  initial-commands: []

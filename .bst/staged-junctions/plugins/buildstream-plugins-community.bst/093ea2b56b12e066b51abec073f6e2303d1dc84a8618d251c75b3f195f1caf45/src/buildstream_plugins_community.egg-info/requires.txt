@@ -1,0 +1,7 @@
+packaging
+
+[bazel]
+requests
+
+[deb]
+arpy

@@ -1,0 +1,76 @@
+# Dpkg default configurations
+
+variables:
+
+  # build-commands
+  rulesfile: "debian/rules"
+  prepare-dir: "/bin/chmod +x debian/rules"
+  clean: "%{rulesfile} clean"
+  build: "%{rulesfile} build"
+  binary: "env DH_OPTIONS='--destdir=.' %{rulesfile} binary"
+
+  # install-commands
+  #
+  # packages' default value will be automatically replaced with
+  # defaults calculated from debian/control. Replace this with a
+  # space-separated list of packages to have more control over
+  # what gets generated.
+  #
+  # e.g.
+  # packages: "foo foo-dev foo-doc"
+  #
+  packages: <PACKAGES>
+  install-packages: |
+    for pkg in %{packages}; do
+      cp -a debian/${pkg}/* %{install-root}
+    done
+  clear-debian: |
+    rm -r %{install-root}/DEBIAN
+
+  # Set this if the sources cannot handle parallelization.
+  #
+  # notparallel: True
+
+config:
+
+  # Commands for building the software
+  #
+  build-commands:
+  - |
+    %{prepare-dir}
+  - |
+    %{clean}
+  - |
+    %{build}
+  - |
+    %{binary}
+
+  # Commands for installing the software into a
+  # destination folder
+  #
+  install-commands:
+  - |
+    %{install-packages}
+  - |
+    %{clear-debian}
+
+  # Commands for stripping debugging information out of
+  # installed binaries
+  #
+  strip-commands:
+  - |
+    %{strip-binaries}
+
+# Use max-jobs CPUs for building and enable verbosity
+environment:
+  MAKEFLAGS: -j%{max-jobs}
+  V: 1
+  DH_VERBOSE: 1
+  QUILT_PATCHES: debian/patches
+
+# And don't consider MAKEFLAGS or V as something which may
+# effect build output.
+environment-nocache:
+- MAKEFLAGS
+- V
+- DH_VERBOSE

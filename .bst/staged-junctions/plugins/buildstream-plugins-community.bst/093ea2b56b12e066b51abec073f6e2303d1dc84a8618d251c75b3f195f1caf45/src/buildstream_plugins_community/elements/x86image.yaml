@@ -1,0 +1,147 @@
+#x86 image default configuration
+
+# When specifying dependencies, one needs to specify
+# which dependencies are a part of the 'input' for
+# the image, other dependencies are assumed to be tooling
+# required to build the image and will be staged in "/"
+#
+# E.g.:
+#
+# build-depends:
+# - base.bst
+# - filename: input1.bst
+#   config:
+#     input: True
+# - filename: input2.bst
+#   config:
+#     input: True
+#
+
+variables:
+  # Size of the disk to create
+  #
+  # Should be able to calculate this based on the space
+  # used, however it must be a multiple of (63 * 512) bytes
+  # as mtools wants a size that is devisable by sectors (512 bytes)
+  # per track (63).
+  boot-size: 252000K
+  rootfs-size: 4G
+  swap-size: 1G
+  sector-size: 512
+
+  kernel-args: root=/dev/sda2 rootfstype=ext4 rootdelay=20 init=/sbin/init
+
+config:
+
+  filesystem-tree-setup-commands:
+  - |
+    # XXX Split up the boot directory and the other
+    #
+    # This should be changed so that the /boot directory
+    # is created separately.
+  
+    cd /buildstream
+    mkdir -p /buildstream/boot
+    mv %{build-root}/boot/* /buildstream/boot
+  
+  - |
+    # Generate an fstab
+    cat > %{build-root}/etc/fstab << EOF
+    /dev/sda2   /       ext4   defaults,rw,noatime   0 1
+    /dev/sda1   /boot   vfat   defaults              0 2
+    /dev/sda3   none    swap   defaults              0 0
+    EOF
+  
+  - |
+    # Create the syslinux config
+    mkdir -p /buildstream/boot/syslinux
+    cat > /buildstream/boot/syslinux/syslinux.cfg << EOF
+    PROMPT 0
+    TIMEOUT 5
+  
+    ALLOWOPTIONS 1
+    SERIAL 0 115200
+  
+    DEFAULT boot
+    LABEL boot
+  
+    KERNEL /vmlinuz
+    INITRD /initramfs.gz
+  
+    APPEND %{kernel-args}
+    EOF
+  filesystem-image-creation-commands:
+  - |
+    # Create the vfat image
+    truncate -s %{boot-size} /buildstream/sda1.img
+    mkdosfs /buildstream/sda1.img
+
+  - |
+    # Copy all that stuff into the image
+    mcopy -D s -i /buildstream/sda1.img -s /buildstream/boot/* ::/
+
+  - |
+    # Install the bootloader on the image, it should get the config file
+    # from inside the vfat image, I think
+    syslinux --directory /syslinux/ /buildstream/sda1.img
+
+  - |
+    # Now create the root filesys on sda2
+    truncate -s %{rootfs-size} /buildstream/sda2.img
+    mkfs.ext4 -F -i 8192 -L root -d %{build-root} /buildstream/sda2.img
+
+  - |
+    # Create swap
+    truncate -s %{swap-size} /buildstream/sda3.img
+    mkswap -L swap /buildstream/sda3.img
+
+  partition-commands:
+  - |
+    ########################################
+    #         Partition the disk           #
+    ########################################
+
+    # First get the size in bytes
+    sda1size=$(stat -c "%s" /buildstream/sda1.img | head -c -1)
+    sda2size=$(stat -c "%s" /buildstream/sda2.img | head -c -1)
+    sda3size=$(stat -c "%s" /buildstream/sda3.img | head -c -1)
+
+    # Now convert to sectors
+    sda1sec=$(( ${sda1size} / %{sector-size} ))
+    sda2sec=$(( ${sda2size} / %{sector-size} ))
+    sda3sec=$(( ${sda3size} / %{sector-size} ))
+
+    # Now get the offsets in sectors, first sector is MBR
+    sda1offset=1
+    sda2offset=$(( ${sda1offset} + ${sda1sec} ))
+    sda3offset=$(( ${sda2offset} + ${sda2sec} ))
+
+    # Get total disk size in sectors and bytes
+    sdasectors=$(( ${sda3offset} + ${sda3sec} ))
+    sdabytes=$(( ${sdasectors} * %{sector-size} ))
+
+    # Create the main disk and do the partitioning
+    truncate -s ${sdabytes} %{install-root}/sda.img
+    parted -s %{install-root}/sda.img mklabel msdos
+    parted -s %{install-root}/sda.img unit s mkpart primary fat32 ${sda1offset} $(( ${sda1offset} + ${sda1sec} - 1 ))
+    parted -s %{install-root}/sda.img unit s mkpart primary ext2 ${sda2offset} $(( ${sda2offset} + ${sda2sec} - 1 ))
+    parted -s %{install-root}/sda.img unit s mkpart primary linux-swap ${sda3offset} $(( ${sda3offset} + ${sda3sec} - 1 ))
+
+    # Make partition 1 the boot partition
+    parted -s %{install-root}/sda.img set 1 boot on
+
+    # Now splice the existing filesystems directly into the image
+    dd if=/buildstream/sda1.img of=%{install-root}/sda.img \
+        ibs=%{sector-size} obs=%{sector-size} conv=notrunc \
+        count=${sda1sec} seek=${sda1offset}
+
+    dd if=/buildstream/sda2.img of=%{install-root}/sda.img \
+        ibs=%{sector-size} obs=%{sector-size} conv=notrunc \
+        count=${sda2sec} seek=${sda2offset}
+
+    dd if=/buildstream/sda3.img of=%{install-root}/sda.img \
+        ibs=%{sector-size} obs=%{sector-size} conv=notrunc \
+        count=${sda3sec} seek=${sda3offset}
+  final-commands:
+  - |
+    chmod 0644 %{install-root}/sda.img

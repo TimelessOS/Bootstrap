@@ -1,0 +1,14 @@
+# The dependencies listed here are necessary for specifc plugins, but
+# aren't required for buildstream-plugins-community to be installed.
+
+# deb source
+arpy
+
+# Bazel source
+requests
+
+# git_repo and cargo2 source
+dulwich>=0.21.7
+
+# cargo2 source
+tomlkit

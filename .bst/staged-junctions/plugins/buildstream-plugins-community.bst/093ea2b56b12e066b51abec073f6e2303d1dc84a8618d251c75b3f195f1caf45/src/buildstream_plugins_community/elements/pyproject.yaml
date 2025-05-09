@@ -1,0 +1,17 @@
+variables:
+  python: python -P
+  build-args: "--no-isolation --wheel --outdir %{dist-dir}"
+  dist-dir: "%{build-root}/dist"
+
+config:
+  build-commands:
+  - |
+    %{python} -mbuild %{build-args} .
+
+  install-commands:
+  - |
+    %{python} -minstaller %{dist-dir}/*.whl --destdir %{install-root}
+
+  strip-commands:
+  - |
+    %{strip-binaries}

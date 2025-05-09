@@ -1,0 +1,58 @@
+# Bazel default configuration
+
+variables:
+
+  target: ""
+  
+  bazel-startup-global: ""
+
+  bazel-startup-local: ""
+
+  bazel: bazel --output_user_root /bazel-home %{bazel-startup-global} %{bazel-startup-local}
+
+  bazel-build-global: ""
+
+  bazel-build-local: ""
+
+  strip: "sometimes"
+
+  compilation-mode: "fastbuild"
+
+  distdir: _bst_distdir
+
+  bazel-build: >-
+    %{bazel} build %{target}
+    --distdir %{distdir}
+    --verbose_failures
+    --strip %{strip}
+    --compilation_mode %{compilation-mode}
+    %{bazel-build-global}
+    %{bazel-build-local}
+
+config:
+
+  # Commands for configuring the software
+  #
+  # We leave these blank, as bazel has no fixed way to 
+  # configure software
+  #
+  configure-commands: []
+
+
+  # Commands for building the software
+  #
+  build-commands:
+  - "%{bazel-build}"
+
+  # Commands for installing the software into a
+  # destination folder
+  #
+  # We leave these blank as bazel has no fixed way to
+  # install software
+  #
+  install-commands: []
+
+  # We shouldn't need strip commands, as bazel should
+  # strip binaries if told
+  #
+  strip-commands: []

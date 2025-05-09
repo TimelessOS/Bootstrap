@@ -1,0 +1,35 @@
+#dpkg_deploy default configuration
+
+# When specifying dependencies, one needs to specify one of the
+# dependencies as the 'input' element.
+#
+# The 'input' should be a debian package structure which should have
+# the 'dpkg-data' public data describing how they can be packaged.
+#
+# E.g.:
+#
+# build-depends:
+# - filename: base-tooling.bst
+# - filename: input.bst
+#   config:
+#     input: True
+#
+
+variables:
+  # packages' default value will be automatically replaced with
+  # defaults calculated from the input's split-rules. Replace this
+  # with a space-separated list of packages to have more control
+  # over what gets generated.
+  #
+  packages: <PACKAGES>
+  buildpkg: |
+            for package in %{packages}; do
+              /bin/chmod 0755 %{build-root}/$package/DEBIAN
+              dpkg-deb --build %{build-root}/$package %{install-root}
+            done
+
+config:
+
+  build-commands:
+  - |
+    %{buildpkg}

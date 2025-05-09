@@ -1,0 +1,8 @@
+projects:
+  TimelessOS-Bootstrap:
+    plugins/buildstream-plugins-community.bst:
+    - ref: 55d99592494da3c296f3a4cf58d4c20f6260ba92d3ec5d217c5a9a7330bf3e93
+    plugins/buildstream-plugins.bst:
+    - ref: b623961ef968a6bdeb86c907360276374b79ebff
+    freedesktop-sdk.bst:
+    - ref: freedesktop-sdk-24.08.19-20-ga64ba9a9b038daf50918d850c1a9e7f4b711be8f
