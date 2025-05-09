@@ -1,6 +1,5 @@
 kind: junction
 sources:
-- kind: git_tag
+- kind: git_repo
   url: gitlab:freedesktop-sdk/freedesktop-sdk.git
-  checkout-submodules: false
-  track: release/24.08
+  track: release/24.08*
